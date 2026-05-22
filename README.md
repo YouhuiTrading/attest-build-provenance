@@ -55,7 +55,7 @@ attest:
 1. Add the following to your workflow after your artifact has been built:
 
    ```yaml
-   - uses: actions/attest-build-provenance@v2
+   - uses: actions/attest-build-provenance@v3
      with:
        subject-path: '<PATH TO ARTIFACT>'
    ```
@@ -68,7 +68,7 @@ attest:
 See [action.yml](action.yml)
 
 ```yaml
-- uses: actions/attest-build-provenance@v2
+- uses: actions/attest-build-provenance@v3
   with:
     # Path to the artifact serving as the subject of the attestation. Must
     # specify exactly one of "subject-path", "subject-digest", or
@@ -121,6 +121,10 @@ Attestations are saved in the JSON-serialized [Sigstore bundle][6] format.
 If multiple subjects are being attested at the same time, a single attestation
 will be created with references to each of the supplied subjects.
 
+The absolute path to the generated attestation is appended to the file
+`${RUNNER_TEMP}/created_attestation_paths.txt`. This file will accumulate the
+paths to all attestations created over the course of a single workflow.
+
 ## Attestation Limits
 
 ### Subject Limits
@@ -155,7 +159,7 @@ jobs:
       - name: Build artifact
         run: make my-app
       - name: Attest
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: '${{ github.workspace }}/my-app'
 ```
@@ -166,7 +170,7 @@ If you are generating multiple artifacts, you can attest all of them at the same
 time by using a wildcard in the `subject-path` input.
 
 ```yaml
-- uses: actions/attest-build-provenance@v2
+- uses: actions/attest-build-provenance@v3
   with:
     subject-path: 'dist/**/my-bin-*'
 ```
@@ -178,13 +182,13 @@ Alternatively, you can explicitly list multiple subjects with either a comma or
 newline delimited list:
 
 ```yaml
-- uses: actions/attest-build-provenance@v2
+- uses: actions/attest-build-provenance@v3
   with:
     subject-path: 'dist/foo, dist/bar'
 ```
 
 ```yaml
-- uses: actions/attest-build-provenance@v2
+- uses: actions/attest-build-provenance@v3
   with:
     subject-path: |
       dist/foo
@@ -205,7 +209,7 @@ attestation.
 - name: Calculate artifact digests
   run: |
     shasum -a 256 foo_0.0.1_* > subject.checksums.txt
-- uses: actions/attest-build-provenance@v2
+- uses: actions/attest-build-provenance@v3
   with:
     subject-checksums: subject.checksums.txt
 ```
@@ -278,7 +282,7 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
       - name: Attest
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         id: attest
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
@@ -300,7 +304,7 @@ artifact directly into the `subject-digest` input of the attestation action.
     path: dist/*
     name: artifact.zip
 
-- uses: actions/attest-build-provenance@v2
+- uses: actions/attest-build-provenance@v3
   with:
     subject-name: artifact.zip
     subject-digest: sha256:${{ steps.upload.outputs.artifact-digest }}
